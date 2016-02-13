@@ -1,0 +1,7 @@
+{
+  "name": "softcatala/sc-importer",
+  "type": "wordpress-plugin",
+  "description": "Plugin to perform custom import for custom post type + custom taxonomies for Softcatalà",
+  "license": "GPLv3"
+}
+
