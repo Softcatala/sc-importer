@@ -24,6 +24,7 @@ function scimporter_config_page() {
 
 function scimporter_enqueue_scripts() {
     wp_enqueue_script( 'sc-js-importer', plugins_url( 'sc_importer.js', __FILE__ ), array('jquery'), '1.0.0', true );
+    wp_enqueue_style( 'sc-css-importer', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css', array(), '1.0' );
 
     wp_localize_script( 'sc-js-importer', 'scajax', array(
         'ajax_url' => admin_url( 'admin-ajax.php' )

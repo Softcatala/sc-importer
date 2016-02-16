@@ -9,6 +9,7 @@ jQuery( document ).ready(function() {
 
         jQuery("#loading").fadeIn();
         var nom_programa = jQuery("#nom_programa").val();
+        jQuery("#submit").html('S\'està important... <i class="fa fa-spinner fa-pulse"></i>');
 
         var step = jQuery("#step").val();
         execute_import_step( 1, step, step );
@@ -17,18 +18,20 @@ jQuery( document ).ready(function() {
 });
 
 function form_import_ok(dt) {
+    jQuery("#result_import").show();
     var div_import = jQuery("#result_import").html();
     var final_import = div_import + dt.text + '<br/>Processats: ' + dt.j_value + '<br/>';
     jQuery("#result_import").html(final_import);
 
     if ( dt.i_value < 301 ) {
-        execute_import_step( dt.i_value + 1, dt.j_value, dt.step );
+        execute_import_step( dt.i_value, dt.j_value, dt.step );
     }
 }
 
 function form_import_ko() {
     text = '<div style="border: 1px solid #dddddd; padding: 10px;">S\'ha produït un error en la importació</div>';
     jQuery("#result_import").html();
+    jQuery("#submit").val('Inicia la importació');
     alert('Alguna cosa no ha funcionat bé');
 }
 
