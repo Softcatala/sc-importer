@@ -24,6 +24,7 @@ function scimporter_config_page() {
 
 function scimporter_enqueue_scripts() {
     wp_enqueue_script( 'sc-js-importer', plugins_url( 'sc_importer.js', __FILE__ ), array('jquery'), '1.0.0', true );
+
     wp_localize_script( 'sc-js-importer', 'scajax', array(
         'ajax_url' => admin_url( 'admin-ajax.php' )
     ));
@@ -45,8 +46,10 @@ function sc_rebost_import()
 {
     $i = intval(sanitize_text_field( $_POST["i_value"] ));
     $j = intval(sanitize_text_field( $_POST["j_value"] ));
+    $step = intval(sanitize_text_field( $_POST["step"] ));
+
     $importer = new SC_Importer();
-    $result = $importer->run( $i, $j );
+    $result = $importer->run( $i, $j, $step );
     echo json_encode($result);
     die();
 }
