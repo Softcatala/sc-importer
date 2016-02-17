@@ -12,6 +12,7 @@ jQuery( document ).ready(function() {
         jQuery("#submit").html('S\'està important... <i class="fa fa-spinner fa-pulse"></i>');
 
         var step = jQuery("#step").val();
+        jQuery("#result_import").html('');
         execute_import_step( 1, step, step );
 
     });
@@ -23,8 +24,13 @@ function form_import_ok(dt) {
     var final_import = div_import + dt.text + '<br/>Processats: ' + dt.j_value + '<br/>';
     jQuery("#result_import").html(final_import);
 
-    if ( dt.i_value < 301 ) {
+    if ( ! dt.end_of_file ) {
         execute_import_step( dt.i_value, dt.j_value, dt.step );
+    } else {
+        var div_import = jQuery("#result_import").html();
+        var final_import = 'S\'ha completat la importació.<br/><br/>' + div_import + dt.text + '<br/>Processats: ' + dt.j_value + '<br/>';
+        jQuery("#result_import").html(final_import);
+        jQuery("#submit").html('Inicia la importació');
     }
 }
 
