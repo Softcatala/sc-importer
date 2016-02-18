@@ -18,6 +18,22 @@ jQuery( document ).ready(function() {
     });
 });
 
+jQuery( document ).ready(function() {
+
+    var $import_rebost_form = jQuery('#import_wordpress_ids_form');
+
+    $import_rebost_form.on('submit', function (ev) {
+        ev.preventDefault();
+
+        jQuery("#loading").fadeIn();
+        jQuery("#submit_ids").html('S\'està important... <i class="fa fa-spinner fa-pulse"></i>');
+
+        jQuery("#result_import").html('');
+        execute_wordpress_ids_import();
+
+    });
+});
+
 function form_import_ok(dt) {
     jQuery("#result_import").show();
     var div_import = jQuery("#result_import").html();
@@ -48,6 +64,22 @@ function execute_import_step ( i_value, j_value, step ) {
     post_data.append('j_value', j_value);
     post_data.append('step', step);
     post_data.append('action', 'rebost_import');
+
+    jQuery.ajax({
+        type: 'POST',
+        url: scajax.ajax_url,
+        data: post_data,
+        dataType: 'json',
+        contentType: false,
+        processData: false,
+        success: form_import_ok,
+        error: form_import_ko
+    });
+}
+
+function execute_wordpress_ids_import() {
+    var post_data = new FormData();
+    post_data.append('action', 'wordpressids_import');
 
     jQuery.ajax({
         type: 'POST',

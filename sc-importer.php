@@ -11,6 +11,11 @@ define('SCIMPORTER_TEXTDOMAIN', 'scimporter');
 
 class SC_Importer_Plugin {
 
+    protected $link;
+    const DB_User = 'rrebost';
+    const DB_Pass = 'mypasswd';
+    const DB_Name = 'rebost';
+
     public function __construct()
     {
         add_action('admin_menu', array( $this, 'scimporter_config_page' ));
@@ -19,6 +24,8 @@ class SC_Importer_Plugin {
         /* AJAX */
         add_action( 'wp_ajax_rebost_import', array( $this, 'sc_rebost_import' ));
         add_action( 'wp_ajax_nopriv_rebost_import', array( $this, 'sc_rebost_import' ));
+        add_action( 'wp_ajax_wordpressids_import', array( $this, 'sc_wordpressids_import' ));
+        add_action( 'wp_ajax_nopriv_wordpressids_import', array( $this, 'sc_wordpressids_import' ));
 
         if ( !class_exists( 'SC_Importer' ) ) {
             require_once dirname(__FILE__) . '/lib/importer.php';
@@ -72,6 +79,126 @@ class SC_Importer_Plugin {
         $result = $importer->run( $i, $j, $step );
         echo json_encode($result);
         die();
+    }
+
+    /**
+     * This function imports the wordpress ids into the rebost DB
+     */
+    function sc_wordpressids_import() {
+        //Connect to the DB
+        $this->link = mysqli_connect('localhost', self::DB_User, self::DB_Pass, self::DB_Name);
+
+        //Create column if it doesn't exit
+        $query = "SHOW COLUMNS FROM `baixades` LIKE 'wordpress_id';";
+        $result = $this->do_the_query( $query );
+
+        //Create table baixades_titles if it doesn't exist
+        $this->create_table('baixades_titles');
+
+        if ( ! $result ) {
+            $query_create_column = "ALTER TABLE `baixades` ADD wordpress_id INT(8) after idrebost";
+            $result = $this->do_the_query( $query_create_column, 'alter' );
+            if ( ! $result ) {
+                //error
+            }
+        }
+
+        $query_idrebost = "SELECT idrebost FROM baixades GROUP BY idrebost";
+        $result = $this->do_the_query( $query_idrebost );
+        foreach ( $result as $idrebost ) {
+            $rebost_id = $idrebost->idrebost;
+            $programa = $this->get_the_wordpress_programa( $rebost_id );
+            if ( $programa ) {
+                $wordpress_id = $programa->ID;
+                $programa_title = $programa->post_title;
+
+                //Create the entry for program name if it doesn't exist
+                $query_check_program_title = "SELECT wordpress_id FROM baixades_titles WHERE title = \"$programa_title\"";
+                $result = $this->do_the_query( $query_check_program_title );
+                if ( ! $result ) {
+                    $query_insert_program_title = "INSERT INTO baixades_titles ( `idrebost`, `wordpress_id`, `title`)
+                                              VALUES ( \"$rebost_id\", \"$wordpress_id\",
+                                              CONVERT(CONVERT(\"$programa_title\" USING binary) USING utf8) )"
+                    ;
+                    $this->do_the_query( $query_insert_program_title, 'insert' );
+                }
+            } else {
+                $wordpress_id = $programa;
+            }
+
+            $query_update_wordpress_id = "UPDATE baixades SET wordpress_id = \"$wordpress_id\" WHERE idrebost = \"$rebost_id\"";
+            $this->do_the_query( $query_update_wordpress_id, 'update' );
+        }
+    }
+
+    /**
+     * This function executes the passed query
+     *
+     * @param string $query
+     * @return object $result
+     */
+    public function do_the_query( $query, $type = 'select' )
+    {
+        $result = array();
+
+        $query_result = $this->link->query($query);
+
+        if ( $type != 'select') {
+            $result = $query_result;
+        } else {
+            while ($row = $query_result->fetch_object()){
+                $result[] = $row;
+            }
+        }
+
+
+        return $result;
+    }
+
+    /**
+     * This function retrieves the wordpress_id given a rebost_id value
+     */
+    function get_the_wordpress_programa( $rebost_id ) {
+        $args = array(
+            'post_type' => 'programa',
+            'meta_query' => array(
+                array(
+                    'key' => 'wpcf-idrebost',
+                    'value' => $rebost_id,
+                    'compare' => '='
+                )
+            )
+        );
+
+        $programes = query_posts($args);
+        if ( count ( $programes) > 0 ) {
+            $programa = $programes[0];
+        } else {
+            $programa = 0;
+        }
+
+        return $programa;
+    }
+
+    /**
+     * Creates the table baixades_titles if it doesn't exist
+     */
+    function create_table ($table_name) {
+        //Table names creation
+        $query_table = "SHOW TABLES LIKE '$table_name'";
+        $result = $this->do_the_query( $query_table, 'show' );
+
+        if ( ! $result->num_rows ) {
+            $query_create_table = "CREATE TABLE $table_name (
+                                  title_id INT NOT NULL AUTO_INCREMENT,
+                                  idrebost INT NOT NULL,
+                                  wordpress_id INT NOT NULL,
+                                  title VARCHAR(255) NOT NULL,
+                                  PRIMARY KEY ( title_id )
+            )";
+
+            $this->do_the_query( $query_create_table, 'create_table' );
+        }
     }
 }
 
