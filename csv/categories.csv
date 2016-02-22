@@ -1,0 +1,26 @@
+taxonomy,category_name,category_slug,parent
+categoria_projecte,Traducció de programari,traduccio-de-programari,0
+categoria_projecte,Creació de recursos per a traductors,creacio-recursos-traductors,0
+esdeveniment_cat,De llengua catalana,de-llengua-catalana,0
+esdeveniment_cat,De programari lliure,de-programari-lliure,0
+esdeveniment_cat,De traduccio,de-traduccio,0
+esdeveniment_cat,Trobades de pencaires,trobades-de-pencaires,0
+category,Novetat,novetat,0
+category,Temes,temes,0
+category,De llengua catalana,de-llengua-catalana,temes
+category,De programari lliure,de-programari-lliure,temes
+category,De traducció,de-traduccio,temes
+category,Trobades de pencaires,trobades-de-pencaires,temes
+category,Tipus,tipus,0
+category,Articles,articles,tipus
+category,Notes de premsa,notes-de-premsa,tipus
+category,Presentacions,presentacions,tipus
+sistema_operatiu_aparell,Android,android,0
+sistema_operatiu_aparell,BlackBerry,blackberry,0
+sistema_operatiu_aparell,FirefoxOS,firefoxos,0
+sistema_operatiu_aparell,iOS,ios,0
+sistema_operatiu_aparell,Windows Phone,windows-phone,0
+tipus_aparell,Lector de llibres,lector-de-llibres,0
+tipus_aparell,Mòbil,mobil,0
+tipus_aparell,Portables,portables,0
+tipus_aparell,Tauletes,tauletes,0

@@ -8,7 +8,9 @@
 class SC_Importer
 {
     protected $link;
+    protected $csv_dir;
     const csvfile = 'result.csv';
+    const csv_taxonomies = 'categories.csv';
     const DB_User = 'rrebost';
     const DB_Pass = 'mypasswd';
     const DB_Name = 'rebost';
@@ -16,6 +18,7 @@ class SC_Importer
     public function __construct()
     {
         $this->link = mysqli_connect('localhost', self::DB_User, self::DB_Pass, self::DB_Name);
+        $this->csv_dir = plugin_dir_url(__FILE__).'../csv/';
     }
 
     public function run( $i, $j, $step )
@@ -281,23 +284,44 @@ class SC_Importer
      *
      * @param $taxonomy_name
      * @param $taxonomy
+     * @param $slug
+     * @param $parent
      * @return mixed
      */
-    private function get_taxonomy_id ( $taxonomy_name, $taxonomy )
+    private function get_taxonomy_id ( $taxonomy_name, $taxonomy, $slug = false, $parent = false )
     {
         if( ! empty ( $taxonomy_name ) ) {
             $id = term_exists($taxonomy_name, $taxonomy);
-            if ( ! $id ) {
-                $id = wp_insert_term(
-                    $taxonomy_name,
-                    $taxonomy
-                );
+            if (!$id) {
+                if (!$slug && !$parent) {
+                    $id = wp_insert_term(
+                        $taxonomy_name,
+                        $taxonomy
+                    );
+                } else {
+                    $id_parent = term_exists($parent, $taxonomy);
+                    if ( $id_parent ) {
+                        $id_parent = $id_parent["term_id"];
+                    }
+
+                    $id = wp_insert_term(
+                        $taxonomy_name,
+                        $taxonomy,
+                        array (
+                            'slug' => $slug,
+                            'parent' => $id_parent
+                        )
+                    );
+                }
             }
-            $result = $id['term_id'];
+            if ( is_wp_error($id) ) {
+                $result = 'Error creating '. $taxonomy_name;
+            } else {
+                $result = $id['term_id'];
+            }
         } else {
             $result = '';
         }
-
 
         return $result;
     }
@@ -447,4 +471,46 @@ class SC_Importer
 
         return $value;
     }
+
+    /**
+     * Imports a taxonomie
+     *
+     * @return string
+     */
+    function import_taxonomy( $data ) {
+        $id = $this->get_taxonomy_id( $data[1], $data[0], $data[2], $data[3] );
+        if ( is_wp_error($id) ) {
+            $message = 'Error creating '. $data[1] . ' taxonomy.';
+        } else {
+            $message = 'Taxonomy type: '. $data[0] . ', name '. $data[1] . ' created.';
+        }
+
+        return $message;
+    }
+
+    /**
+     * Runs the taxonomies import from a csv file
+     *
+     * @return array
+     */
+    public function import_taxonomies()
+    {
+        $row = 1;
+        $return['text'] = '';
+        $file = $this->csv_dir.self::csv_taxonomies;
+
+        if ( ( $handle = fopen( $file, "r" ) ) !== FALSE ) {
+            while (($data = fgetcsv($handle, 100000, ",")) !== FALSE) {
+                if ( $row > 1) {
+                    $return['text'] .= $this->import_taxonomy( $data ). '<br/>';
+                }
+                $row++;
+            }
+        }
+
+        return $return;
+    }
+
+
+
 }

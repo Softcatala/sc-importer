@@ -26,6 +26,8 @@ class SC_Importer_Plugin {
         add_action( 'wp_ajax_nopriv_rebost_import', array( $this, 'sc_rebost_import' ));
         add_action( 'wp_ajax_wordpressids_import', array( $this, 'sc_wordpressids_import' ));
         add_action( 'wp_ajax_nopriv_wordpressids_import', array( $this, 'sc_wordpressids_import' ));
+        add_action( 'wp_ajax_taxonomies_import', array( $this, 'sc_taxonomies_import' ));
+        add_action( 'wp_ajax_nopriv_taxonomies_import', array( $this, 'sc_taxonomies_import' ));
 
         if ( !class_exists( 'SC_Importer' ) ) {
             require_once dirname(__FILE__) . '/lib/importer.php';
@@ -129,6 +131,17 @@ class SC_Importer_Plugin {
             $query_update_wordpress_id = "UPDATE baixades SET wordpress_id = \"$wordpress_id\" WHERE idrebost = \"$rebost_id\"";
             $this->do_the_query( $query_update_wordpress_id, 'update' );
         }
+    }
+
+    /**
+     * This function imports the wordpress ids into the rebost DB
+     */
+    function sc_taxonomies_import() {
+        $importer = new SC_Importer();
+        $result = $importer->import_taxonomies();
+
+        echo json_encode($result);
+        die();
     }
 
     /**

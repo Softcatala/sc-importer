@@ -2,34 +2,43 @@
 
 jQuery( document ).ready(function() {
 
+    //Importació de programes del rebost
     var $import_rebost_form = jQuery('#import_rebost_form');
 
     $import_rebost_form.on('submit', function (ev) {
         ev.preventDefault();
 
-        jQuery("#loading").fadeIn();
         var nom_programa = jQuery("#nom_programa").val();
         jQuery("#submit").html('S\'està important... <i class="fa fa-spinner fa-pulse"></i>');
 
         var step = jQuery("#step").val();
         jQuery("#result_import").html('');
-        execute_import_step( 1, step, step );
-
+        execute_import_step(1, step, step);
     });
-});
 
-jQuery( document ).ready(function() {
-
+    //Importació de les ids del rebost
     var $import_rebost_form = jQuery('#import_wordpress_ids_form');
 
     $import_rebost_form.on('submit', function (ev) {
         ev.preventDefault();
 
-        jQuery("#loading").fadeIn();
         jQuery("#submit_ids").html('S\'està important... <i class="fa fa-spinner fa-pulse"></i>');
 
         jQuery("#result_import").html('');
         execute_wordpress_ids_import();
+
+    });
+
+    //Importació de taxonomies
+    var $import_rebost_form = jQuery('#import_taxonomies_form');
+
+    $import_rebost_form.on('submit', function (ev) {
+        ev.preventDefault();
+
+        jQuery("#submit_cat").html('S\'està important... <i class="fa fa-spinner fa-pulse"></i>');
+
+        jQuery("#result_import").html('');
+        execute_taxonomies_import();
 
     });
 });
@@ -91,4 +100,32 @@ function execute_wordpress_ids_import() {
         success: form_import_ok,
         error: form_import_ko
     });
+}
+
+function execute_taxonomies_import() {
+    var post_data = new FormData();
+    post_data.append('action', 'taxonomies_import');
+
+    jQuery.ajax({
+        type: 'POST',
+        url: scajax.ajax_url,
+        data: post_data,
+        dataType: 'json',
+        contentType: false,
+        processData: false,
+        success: form_taxonomies_ok,
+        error: form_taxonomies_ko
+    });
+}
+
+function form_taxonomies_ok(dt) {
+    jQuery("#result_import").show();
+    jQuery("#result_import").html(dt.text);
+    jQuery("#submit_cat").html('Inicia la importació de taxonomies');
+}
+
+function form_taxonomies_ko(dt) {
+    jQuery("#result_import").show();
+    jQuery("#result_import").html('Alguna cosa no ha funcionat bé');
+    jQuery("#submit_cat").html('Inicia la importació de taxonomies');
 }
