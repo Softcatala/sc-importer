@@ -11,6 +11,7 @@ class SC_Importer
     protected $csv_dir;
     const csvfile = 'result.csv';
     const csv_taxonomies = 'categories.csv';
+    const csv_projectes = 'projectes.csv';
     const DB_User = 'rrebost';
     const DB_Pass = 'mypasswd';
     const DB_Name = 'rebost';
@@ -512,5 +513,114 @@ class SC_Importer
     }
 
 
+    /**
+     * Runs the projectes import from a csv file
+     *
+     * @return array
+     */
+    public function import_projectes()
+    {
+        $row = 1;
+        $return['text'] = '';
+        $file = $this->csv_dir.self::csv_projectes;
 
+        if ( ( $handle = fopen( $file, "r" ) ) !== FALSE ) {
+            while (($data = fgetcsv($handle, 100000, ",")) !== FALSE) {
+                if ( $row > 1) {
+                    $project_info = $this->import_project_data( $data );
+
+                    if ( ! $page = get_page_by_path( $project_info['slug'] , OBJECT, 'projecte' ) ) {
+                        $return['text'] .= $this->import_projecte($project_info) . '<br/>';
+                    } elseif ( strpos( get_permalink( $page ), 'projecte/' ) == false ) {
+                        $return['text'] .= $this->import_projecte($project_info) . '<br/>';
+                    } else {
+                        $return['text'] .= $project_info['post_name']. ' already exists<br/>';
+                    }
+                }
+                $row++;
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Imports a project
+     *
+     * @return string
+     */
+    function import_projecte( $project_info ) {
+        $metadata = array(
+            'lloc_web_projecte' => $project_info['lloc_web_projecte'],
+            'responsable' => $project_info['responsable'],
+            'url_rebost_pr' => $project_info['url_rebost_pr'],
+            'llista_de_correu' => $project_info['llista_de_correu'],
+            'arxivat_pr' => $project_info['arxivat_pr']
+        );
+
+        $terms = array(
+            'categoria_projecte' => array($project_info['categoria_projecte']),
+        );
+
+        //Create the project post entry
+        $return = $this->sc_add_draft_content ( 'projecte', $project_info['post_name'], $project_info['post_content'], $project_info['slug'], $terms, $metadata );
+
+        if( $return['status'] == 1 ) {
+            //Logo and screenshot file upload
+            $logo_attach_id = $this->sc_upload_file($project_info['logotip'], $return['post_id']);
+            $metadata = array(
+                'logotip' => wp_get_attachment_url($logo_attach_id),
+            );
+
+            $this->sc_update_metadata($return['post_id'], $metadata);
+
+            $message = 'Import complete: '. $project_info['post_name'];
+        } else {
+            $message = 'Error importing '. $project_info['post_name'];
+        }
+
+        return $message;
+    }
+
+    /**
+     * Prepares the project data to be imported from the one coming from the csv
+     */
+    private function import_project_data ( $data ) {
+        $value['post_name'] = ( $data[6] != '' ? $data[6] : str_replace( 'Projectes/', '', $data[0] ));
+        $value['responsable'] = str_replace( 'Usuari:', '', $data[2] );
+        $value['slug'] = sanitize_title($value['post_name']);
+        $value['url_rebost_pr'] = 'https://www.softcatala.org/wiki/'.str_replace( ' ', '_', $data[0] );
+        $value['post_content'] = $this->get_wiki_project_content( $value['url_rebost_pr'] );
+        $value['logotip'] = $this->get_image_url( $data[4] );
+        $value['llista_de_correu'] = $data[5];
+        $value['lloc_web_projecte'] = $data[7];
+        $value['arxivat_pr'] = ( $data[8] == 'fals' ? 0 : 1 );
+        $value['categoria_projecte'] = $this->get_taxonomy_id( $data[1], 'categoria_projecte' );
+
+        return $value;
+    }
+
+    /**
+     * Retrieves the project description data
+     *
+     * @param string $url
+     * @return string $description
+     */
+    private function get_wiki_project_content( $url )
+    {
+        $wikipage = file_get_contents($url);
+        $first_step = explode('</span></h2>', $wikipage, 2);
+
+        if( ! isset($first_step[1])) {
+            $first_step = explode('</span></h1>', $wikipage, 4);
+            $second_step = explode('<!--', $first_step[3]);
+        } else {
+            $second_step = explode('<!--', $first_step[1]);
+        }
+
+        //Remove edit sections
+        $description = preg_replace('/<span class="mw-editsection">(.*)<\/h(.*)>/iU', '</h\2>', $second_step[0]);
+
+        return $description;
+    }
 }

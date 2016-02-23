@@ -38,7 +38,19 @@ jQuery( document ).ready(function() {
         jQuery("#submit_cat").html('S\'està important... <i class="fa fa-spinner fa-pulse"></i>');
 
         jQuery("#result_import").html('');
-        execute_taxonomies_import();
+        execute_import('taxonomies_import');
+    });
+
+    //Importació de projectes
+    var $import_form = jQuery('#import_projectes_form');
+
+    $import_form.on('submit', function (ev) {
+        ev.preventDefault();
+
+        jQuery("#submit_pr").html('S\'està important... <i class="fa fa-spinner fa-pulse"></i>');
+
+        jQuery("#result_import").html('');
+        execute_import('projectes_import');
 
     });
 });
@@ -55,14 +67,14 @@ function form_import_ok(dt) {
         var div_import = jQuery("#result_import").html();
         var final_import = 'S\'ha completat la importació.<br/><br/>' + div_import + dt.text + '<br/>Processats: ' + dt.j_value + '<br/>';
         jQuery("#result_import").html(final_import);
-        jQuery("#submit").html('Inicia la importació');
+        restart_buttons_text();
     }
 }
 
 function form_import_ko() {
     text = '<div style="border: 1px solid #dddddd; padding: 10px;">S\'ha produït un error en la importació</div>';
     jQuery("#result_import").html();
-    jQuery("#submit").val('Inicia la importació');
+    restart_buttons_text();
     alert('Alguna cosa no ha funcionat bé');
 }
 
@@ -102,9 +114,9 @@ function execute_wordpress_ids_import() {
     });
 }
 
-function execute_taxonomies_import() {
+function execute_import(action) {
     var post_data = new FormData();
-    post_data.append('action', 'taxonomies_import');
+    post_data.append('action', action);
 
     jQuery.ajax({
         type: 'POST',
@@ -113,19 +125,25 @@ function execute_taxonomies_import() {
         dataType: 'json',
         contentType: false,
         processData: false,
-        success: form_taxonomies_ok,
-        error: form_taxonomies_ko
+        success: import_ok,
+        error: import_ko
     });
 }
 
-function form_taxonomies_ok(dt) {
+function import_ok(dt) {
     jQuery("#result_import").show();
     jQuery("#result_import").html(dt.text);
-    jQuery("#submit_cat").html('Inicia la importació de taxonomies');
+    restart_buttons_text();
 }
 
-function form_taxonomies_ko(dt) {
+function import_ko(dt) {
     jQuery("#result_import").show();
     jQuery("#result_import").html('Alguna cosa no ha funcionat bé');
+    restart_buttons_text();
+}
+
+function restart_buttons_text() {
     jQuery("#submit_cat").html('Inicia la importació de taxonomies');
+    jQuery("#submit_pr").html('Inicia la importació de projectes');
+    jQuery("#submit").html('Inicia la importació');
 }
