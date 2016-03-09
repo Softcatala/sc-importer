@@ -20,7 +20,7 @@ class SC_Importer
     public function __construct()
     {
         $this->link = mysqli_connect('localhost', self::DB_User, self::DB_Pass, self::DB_Name);
-        $this->csv_dir = plugin_dir_url(__FILE__).'../csv/';
+        $this->csv_dir = plugin_dir_path( __FILE__ ).'../csv/';
     }
 
     public function run( $i, $j, $step )
