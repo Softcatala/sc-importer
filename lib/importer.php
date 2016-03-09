@@ -698,6 +698,7 @@ class SC_Importer
         $correccio_cat_values = array ('Sí' => '1', 'No' => '0', 'Desconegut' => '3', 'No s\'aplica' => '2');
         $value['correccio_cat'] = $correccio_cat_values[$data[5]];
         $value['so_aparell'] = $this->get_taxonomy_id( $data[2], 'so_aparell' );
+        $value['tipus_aparell'] = $this->get_taxonomy_id( $data[1], 'tipus_aparell' );
 
         return $value;
     }
