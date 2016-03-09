@@ -2,6 +2,18 @@
 
 jQuery( document ).ready(function() {
 
+    //Tabs
+    jQuery(".nav-tab").on('click', function() {
+        var element_id = jQuery(this).attr('data-id');
+
+        jQuery('#'+element_id).siblings().hide();
+        jQuery('#'+element_id).show();
+        jQuery(this).siblings().removeClass('nav-tab-active');
+        jQuery(this).addClass('nav-tab-active');
+
+
+    });
+
     //Importació de programes del rebost
     var $import_rebost_form = jQuery('#import_rebost_form');
 
@@ -51,6 +63,19 @@ jQuery( document ).ready(function() {
 
         jQuery("#result_import").html('');
         execute_import('projectes_import');
+
+    });
+
+    //Importació d'aparells
+    var $import_form = jQuery('#import_aparells_form');
+
+    $import_form.on('submit', function (ev) {
+        ev.preventDefault();
+
+        jQuery("#submit_ap").html('S\'està important... <i class="fa fa-spinner fa-pulse"></i>');
+
+        jQuery("#result_import").html('');
+        execute_import('aparells_import');
 
     });
 });
@@ -145,5 +170,6 @@ function import_ko(dt) {
 function restart_buttons_text() {
     jQuery("#submit_cat").html('Inicia la importació de taxonomies');
     jQuery("#submit_pr").html('Inicia la importació de projectes');
+    jQuery("#submit_ap").html('Inicia la importació d\'aparells');
     jQuery("#submit").html('Inicia la importació');
 }

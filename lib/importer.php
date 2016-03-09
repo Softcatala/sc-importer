@@ -12,6 +12,7 @@ class SC_Importer
     const csvfile = 'result.csv';
     const csv_taxonomies = 'categories.csv';
     const csv_projectes = 'projectes.csv';
+    const csv_aparells = 'aparells.csv';
     const DB_User = 'rrebost';
     const DB_Pass = 'mypasswd';
     const DB_Name = 'rebost';
@@ -19,7 +20,7 @@ class SC_Importer
     public function __construct()
     {
         $this->link = mysqli_connect('localhost', self::DB_User, self::DB_Pass, self::DB_Name);
-        $this->csv_dir = plugin_dir_path(__FILE__).'../csv/';
+        $this->csv_dir = plugin_dir_url(__FILE__).'../csv/';
     }
 
     public function run( $i, $j, $step )
@@ -359,10 +360,7 @@ class SC_Importer
 
             $this->sc_update_metadata( $post_id, $metadata );
 
-            if ( $type == 'aparell' ) {
-                $featured_image_attach_id = $this->sc_upload_file( 'file', $post_id );
-                $return = $this->sc_set_featured_image( $post_id, $featured_image_attach_id );
-            } elseif ( $type == 'baixada' ) {
+            if ( $type == 'baixada' ) {
                 $return = $this->sc_set_baixada_post_relationship( $post_id, $parent_id );
             } else {
                 $return['status'] = 1;
@@ -545,6 +543,70 @@ class SC_Importer
     }
 
     /**
+     * Runs the aparells import from a csv file
+     *
+     * @return array
+     */
+    public function import_aparells()
+    {
+        $row = 1;
+        $return['text'] = '';
+        $file = $this->csv_dir.self::csv_aparells;
+
+        if ( ( $handle = fopen( $file, "r" ) ) !== FALSE ) {
+            while (($data = fgetcsv($handle, 100000, ",")) !== FALSE) {
+                if ( $row > 1 ) {
+                    $info = $this->import_aparell_data( $data );
+
+                    if ( ! $page = get_page_by_path( $info['slug'] , OBJECT, 'aparell' ) ) {
+                        $return['text'] .= $this->import_aparell($info) . '<br/>';
+                    } elseif ( strpos( get_permalink( $page ), '?aparell' ) == false ) {
+                        $return['text'] .= $this->import_aparell($info) . '<br/>';
+                    } else {
+                        $return['text'] .= $info['post_name']. ' already exists<br/>';
+                    }
+                }
+                $row++;
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Imports an aparell creating the post
+     *
+     * @return string
+     */
+    function import_aparell( $info ) {
+        $info['post_content'] = '';
+        $metadata = array(
+            'versio' => $info['versio'],
+            'fabricant' => $info['fabricant'],
+            'conf_cat' => $info['conf_cat'],
+            'correccio_cat' => $info['correccio_cat']
+        );
+
+        $terms = array(
+            'so_aparell' => array($info['so_aparell']),
+            'tipus_aparell' => array($info['tipus_aparell']),
+        );
+
+        //Create the project post entry
+        $return = $this->sc_add_draft_content( 'aparell', $info['post_name'], $info['post_content'], $info['slug'], $terms, $metadata );
+
+        if( $return['status'] == 1 ) {
+            $this->sc_update_metadata($return['post_id'], $metadata);
+
+            $message = 'Import complete: '. $info['post_name'];
+        } else {
+            $message = 'Error importing '. $info['post_name'];
+        }
+
+        return $message;
+    }
+
+    /**
      * Imports a project
      *
      * @return string
@@ -622,5 +684,21 @@ class SC_Importer
         $description = preg_replace('/<span class="mw-editsection">(.*)<\/h(.*)>/iU', '</h\2>', $second_step[0]);
 
         return $description;
+    }
+
+    /**
+     * Prepares the aparell data to be imported from the one coming from the csv
+     */
+    private function import_aparell_data ( $data ) {
+        $value['post_name'] = $data[7];
+        $value['versio'] = $data[3];
+        $value['fabricant'] = $data[6];
+        $value['slug'] = sanitize_title($value['post_name']);
+        $value['conf_cat'] = ($data[4] == 'verdader' ? 1 : 0 );
+        $correccio_cat_values = array ('Sí' => '1', 'No' => '0', 'Desconegut' => '3', 'No s\'aplica' => '2');
+        $value['correccio_cat'] = $correccio_cat_values[$data[5]];
+        $value['so_aparell'] = $this->get_taxonomy_id( $data[2], 'so_aparell' );
+
+        return $value;
     }
 }

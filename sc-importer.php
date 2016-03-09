@@ -30,6 +30,8 @@ class SC_Importer_Plugin {
         add_action( 'wp_ajax_nopriv_taxonomies_import', array( $this, 'sc_taxonomies_import' ));
         add_action( 'wp_ajax_projectes_import', array( $this, 'sc_projectes_import' ));
         add_action( 'wp_ajax_nopriv_projectes_import', array( $this, 'sc_projectes_import' ));
+        add_action( 'wp_ajax_aparells_import', array( $this, 'sc_aparells_import' ));
+        add_action( 'wp_ajax_nopriv_aparells_import', array( $this, 'sc_aparells_import' ));
 
         if ( !class_exists( 'SC_Importer' ) ) {
             require_once dirname(__FILE__) . '/lib/importer.php';
@@ -152,6 +154,17 @@ class SC_Importer_Plugin {
     function sc_projectes_import() {
         $importer = new SC_Importer();
         $result = $importer->import_projectes();
+
+        echo json_encode($result);
+        die();
+    }
+
+    /**
+     * This function imports SC aparells into the db
+     */
+    function sc_aparells_import() {
+        $importer = new SC_Importer();
+        $result = $importer->import_aparells();
 
         echo json_encode($result);
         die();

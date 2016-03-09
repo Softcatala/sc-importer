@@ -1,43 +1,69 @@
 <div class="wrap">
-
     <h2>Paràmetres SC Importer</h2>
-    <h3>Rebost</h3>
-    <form method="post" id="import_rebost_form">
-        <p>
-            Per iniciar la importació de programes, feu clic al botó següent.
 
-        <table class="form-table">
-            <tbody><tr valign="top">
-                <th scope="row"><label>Nombre de programes a importar cada vegada</label></th>
-                <td><input type="text" value="10" id="step"></td>
-            </tr>
-            </tbody></table>
-        </p>
-        <p class="submit"><button type="submit" class="button button-primary" id="submit" name="submit">Inicia la importació</button></p>
-    </form>
+    <h2 id="wpseo-tabs" class="nav-tab-wrapper">
+        <a data-id="rebost" class="nav-tab nav-tab-active" href="#">Rebost</a>
+        <a data-id="taxonomies" class="nav-tab" href="#">Taxonomies</a>
+        <a data-id="projectes" class="nav-tab" href="#">Projectes</a>
+        <a data-id="aparells" class="nav-tab" href="#">Aparells</a>
+    </h2>
 
-    <form method="post" id="import_wordpress_ids_form">
-        <p>
-            Importa les IDs de WordPress a la BD del rebost
-        </p>
-        <p class="submit"><button type="submit" class="button button-primary" id="submit_ids" name="submit">Inicia la importació</button></p>
-    </form>
 
-    <h3>Taxonomies</h3>
-    <form method="post" id="import_taxonomies_form">
-        <p>
-            Per iniciar la importació de taxonomies, feu clic al botó següent
-        </p>
-        <p class="submit"><button type="submit" class="button button-primary" id="submit_cat" name="submit">Inicia la importació de taxonomies</button></p>
-    </form>
+    <div class="tabs_content">
+        <div id="rebost">
+            <h3>Rebost</h3>
+            <form method="post" id="import_rebost_form">
+                <p>
+                    Per iniciar la importació de programes, feu clic al botó següent.
 
-    <h3>Projectes</h3>
-    <form method="post" id="import_projectes_form">
-        <p>
-            Per iniciar la importació de projectes, feu clic al botó següent
-        </p>
-        <p class="submit"><button type="submit" class="button button-primary" id="submit_pr" name="submit">Inicia la importació de projectes</button></p>
-    </form>
+                <table class="form-table">
+                    <tbody><tr valign="top">
+                        <th scope="row"><label>Nombre de programes a importar cada vegada</label></th>
+                        <td><input type="text" value="10" id="step"></td>
+                    </tr>
+                    </tbody></table>
+                </p>
+                <p class="submit"><button type="submit" class="button button-primary" id="submit" name="submit">Inicia la importació</button></p>
+            </form>
+
+            <form method="post" id="import_wordpress_ids_form">
+                <p>
+                    Importa les IDs de WordPress a la BD del rebost
+                </p>
+                <p class="submit"><button type="submit" class="button button-primary" id="submit_ids" name="submit">Inicia la importació</button></p>
+            </form>
+        </div>
+
+        <div id="taxonomies" style="display: none;">
+            <h3>Taxonomies</h3>
+            <form method="post" id="import_taxonomies_form">
+                <p>
+                    Per iniciar la importació de taxonomies, feu clic al botó següent
+                </p>
+                <p class="submit"><button type="submit" class="button button-primary" id="submit_cat" name="submit">Inicia la importació de taxonomies</button></p>
+            </form>
+        </div>
+
+        <div id="projectes" style="display: none;">
+            <h3>Projectes</h3>
+            <form method="post" id="import_projectes_form">
+                <p>
+                    Per iniciar la importació de projectes, feu clic al botó següent
+                </p>
+                <p class="submit"><button type="submit" class="button button-primary" id="submit_pr" name="submit">Inicia la importació de projectes</button></p>
+            </form>
+        </div>
+
+        <div id="aparells" style="display: none;">
+            <h3>Aparells</h3>
+            <form method="post" id="import_aparells_form">
+                <p>
+                    Per iniciar la importació d'aparells
+                </p>
+                <p class="submit"><button type="submit" class="button button-primary" id="submit_ap" name="submit">Inicia la importació d'aparells</button></p>
+            </form>
+        </div>
+    </div>
 
     <p>
     <div style="border: 1px solid #dddddd; padding: 10px; display:none;" id="result_import"></div>
