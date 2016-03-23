@@ -19,7 +19,7 @@ class SC_Importer
 
     public function __construct()
     {
-        //$this->link = mysqli_connect('localhost', self::DB_User, self::DB_Pass, self::DB_Name);
+        $this->link = mysqli_connect('localhost', self::DB_User, self::DB_Pass, self::DB_Name);
         $this->csv_dir = plugin_dir_path( __FILE__ ).'../csv/';
     }
 
@@ -96,7 +96,7 @@ class SC_Importer
         $value['lloc_web_programa'] = $data[18];
         $value['hosted_in_sc'] = ( $data[23] = 'fals' ? '0' : '1' );
         $value['slug'] = sanitize_title($value['post_name']);
-        $value['idrebost'] = ''; //$this->get_idrebost_for_page_namepage( $value['post_name'] );
+        $value['idrebost'] = $this->get_idrebost_for_page_namepage( $value['post_name'] );
         if ( $data[21] == 'Obsolet' ) {
             $value['arxivat'] = '1';
         } else {
