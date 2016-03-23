@@ -1,4 +1,14 @@
 ,Has Device Type,Has Device OS,Has Device OS Version,Includes Catalan,Includes Catalan Predictive Keyboard,Has Vendor,Has Name
+Aparell:ALLVIEW A5 Quad — ALLVIEW,Mòbil,Android,4.2,verdader,No,ALLVIEW,ALLVIEW A5 Quad
+Aparell:ALLVIEW A6 Quad — ALLVIEW,Mòbil,Android,4.3,verdader,No,ALLVIEW,ALLVIEW A6 Quad
+Aparell:ALLVIEW AX4 Nano — ALLVIEW,Tauleta,Android,4.2,verdader,No,ALLVIEW,ALLVIEW AX4 Nano
+Aparell:ALLVIEW H7S — ALLVIEW,Tauleta,Android,4.2.2,verdader,No,ALLVIEW,ALLVIEW H7S
+Aparell:ALLVIEW P6 Life — ALLVIEW,Mòbil,Android,4.2,verdader,No,ALLVIEW,ALLVIEW P6 Life
+Aparell:AX4 Nano — ALLVIEW,Tauleta,Android,4.2,verdader,No,ALLVIEW,AX4 Nano
+Aparell:Acer Iconia One 10 B3-A20 — Acer,Tauleta,Android,5.0,fals,Desconegut,Acer,Acer Iconia One 10 B3-A20
+Aparell:Alcatel Onetouch Fire C — Alcatel,Mòbil,Firefox OS,1.3.0.0,verdader,Sí,Alcatel,Alcatel Onetouch Fire C
+Aparell:Apple Watch — Apple Inc,Portable,Watch OS,1.0.1,fals,No s'aplica,Apple Inc.,Apple Watch
+Aparell:Aquaris E4.5 Ubuntu Edition — bq,Mòbil,Altre,,verdader,Sí,bq,bq Aquaris E4.5 Ubuntu Edition
 Aparell:Ascend P6 — Huawei,Mòbil,Android,4.2,verdader,Desconegut,Huawei,Huawei Ascend P6
 Aparell:Ascend P7 — Huawei,Mòbil,Android,4.4.2,verdader,Desconegut,Huawei,Huawei Ascend P7
 Aparell:Asus Fonepad ME175CG — Asus,Tauleta,Android,,verdader,No,Asus,Asus Fonepad ME175CG
