@@ -49,18 +49,16 @@ class SC_Importer
             while (($data = fgetcsv($handle, 100000, ",")) !== FALSE) {
                 if ( $row > $i && $row <= $j ) {
                     $post_name = str_replace( 'Rebost:', '', $data[0] );
-                    if($data[0] == 'Rebost:Catalanitzador de Softcatalà') {
-                        $slug = sanitize_title($post_name);
-                        $return['row'] = $row;
-                        if ( ! $page = get_page_by_path( $slug , OBJECT, 'programa' ) ) {
-                            $download_info[$row] = $this->import_data( $data );
-                            $return['text'] .= $this->create_program($download_info[$row]).'<br/>';
-                        } elseif ( strpos( get_permalink( $page ), 'programes/' ) == false ) {
-                            $download_info[$row] = $this->import_data( $data );
-                            $return['text'] .= $this->create_program($download_info[$row]).'<br/>';
-                        } else {
-                            $return['text'] .= $row . ' - Not imported: '. get_permalink( $page ).'<br/>';
-                        }
+                    $slug = sanitize_title($post_name);
+                    $return['row'] = $row;
+                    if ( ! $page = get_page_by_path( $slug , OBJECT, 'programa' ) ) {
+                        $download_info[$row] = $this->import_data( $data );
+                        $return['text'] .= $this->create_program($download_info[$row]).'<br/>';
+                    } elseif ( strpos( get_permalink( $page ), 'programes/' ) == false ) {
+                        $download_info[$row] = $this->import_data( $data );
+                        $return['text'] .= $this->create_program($download_info[$row]).'<br/>';
+                    } else {
+                        $return['text'] .= $row . ' - Not imported: '. get_permalink( $page ).'<br/>';
                     }
                 }
                 $row++;
