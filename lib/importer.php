@@ -9,7 +9,7 @@ class SC_Importer
 {
     protected $link;
     protected $csv_dir;
-    const csvfile = 'result.csv';
+    const csvfile = 'rebost.csv';
     const csv_taxonomies = 'categories.csv';
     const csv_projectes = 'projectes.csv';
     const csv_aparells = 'aparells.csv';
@@ -19,7 +19,7 @@ class SC_Importer
 
     public function __construct()
     {
-        $this->link = mysqli_connect('localhost', self::DB_User, self::DB_Pass, self::DB_Name);
+        //$this->link = mysqli_connect('localhost', self::DB_User, self::DB_Pass, self::DB_Name);
         $this->csv_dir = plugin_dir_path( __FILE__ ).'../csv/';
     }
 
@@ -41,7 +41,7 @@ class SC_Importer
         $row = 1;
         $return['text'] = '';
         $site_url = home_url();
-        $file = $site_url.'/'.self::csvfile;
+        $file = $this->csv_dir.self::csvfile;
         $fp = file( $file, FILE_SKIP_EMPTY_LINES );
         $number_of_lines = count($fp);
         $return['end_of_file'] = false;
@@ -49,16 +49,18 @@ class SC_Importer
             while (($data = fgetcsv($handle, 100000, ",")) !== FALSE) {
                 if ( $row > $i && $row <= $j ) {
                     $post_name = str_replace( 'Rebost:', '', $data[0] );
-                    $slug = sanitize_title($post_name);
-                    $return['row'] = $row;
-                    if ( ! $page = get_page_by_path( $slug , OBJECT, 'programa' ) ) {
-                        $download_info[$row] = $this->import_data( $data );
-                        $return['text'] .= $this->create_program($download_info[$row]).'<br/>';
-                    } elseif ( strpos( get_permalink( $page ), 'programes/' ) == false ) {
-                        $download_info[$row] = $this->import_data( $data );
-                        $return['text'] .= $this->create_program($download_info[$row]).'<br/>';
-                    } else {
-                        $return['text'] .= $row . ' - Not imported: '. get_permalink( $page ).'<br/>';
+                    if($data[0] == 'Rebost:Catalanitzador de Softcatalà') {
+                        $slug = sanitize_title($post_name);
+                        $return['row'] = $row;
+                        if ( ! $page = get_page_by_path( $slug , OBJECT, 'programa' ) ) {
+                            $download_info[$row] = $this->import_data( $data );
+                            $return['text'] .= $this->create_program($download_info[$row]).'<br/>';
+                        } elseif ( strpos( get_permalink( $page ), 'programes/' ) == false ) {
+                            $download_info[$row] = $this->import_data( $data );
+                            $return['text'] .= $this->create_program($download_info[$row]).'<br/>';
+                        } else {
+                            $return['text'] .= $row . ' - Not imported: '. get_permalink( $page ).'<br/>';
+                        }
                     }
                 }
                 $row++;
@@ -96,7 +98,7 @@ class SC_Importer
         $value['lloc_web_programa'] = $data[18];
         $value['hosted_in_sc'] = ( $data[23] = 'fals' ? '0' : '1' );
         $value['slug'] = sanitize_title($value['post_name']);
-        $value['idrebost'] = $this->get_idrebost_for_page_namepage( $value['post_name'] );
+        $value['idrebost'] = ''; //$this->get_idrebost_for_page_namepage( $value['post_name'] );
         if ( $data[21] == 'Obsolet' ) {
             $value['arxivat'] = '1';
         } else {
@@ -232,8 +234,8 @@ class SC_Importer
 
         if( $return['status'] == 1 ) {
             //Logo and screenshot file upload
-            $logo_attach_id = $this->sc_upload_file($value['logotip_programa'], $return['post_id']);
-            $screenshot_attach_id = $this->sc_upload_file($value['imatge_destacada_1'], $return['post_id']);
+            $logo_attach_id = $this->sc_upload_file($value['logotip_programa'], $return['post_id'], $value['post_name']);
+            $screenshot_attach_id = $this->sc_upload_file($value['imatge_destacada_1'], $return['post_id'], $value['post_name']);
             $metadata = array(
                 'logotip_programa' => wp_get_attachment_url($logo_attach_id),
                 'imatge_destacada_1' => wp_get_attachment_url($screenshot_attach_id)
@@ -404,7 +406,7 @@ class SC_Importer
         return $result;
     }
 
-    function sc_upload_file( $value, $post_id ) {
+    function sc_upload_file( $value, $post_id, $post_name ) {
 
         if ( $value ) {
             if ( !function_exists('media_handle_upload') ) {
@@ -419,7 +421,7 @@ class SC_Importer
                 var_dump('Error 1');
                 var_dump($tmp);
             }
-            $desc = "";
+            $desc = $post_name;
             $file_array = array();
 
             // Set variables for storage
@@ -629,7 +631,7 @@ class SC_Importer
 
         if( $return['status'] == 1 ) {
             //Logo and screenshot file upload
-            $logo_attach_id = $this->sc_upload_file($project_info['logotip'], $return['post_id']);
+            $logo_attach_id = $this->sc_upload_file($project_info['logotip'], $return['post_id'], $project_info['post_name']);
             $metadata = array(
                 'logotip' => wp_get_attachment_url($logo_attach_id),
             );
