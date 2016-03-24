@@ -85,7 +85,8 @@ class SC_Importer
         $value['post_name'] = str_replace( 'Rebost:', '', $data[0] );
         $value['autor_programa'] = $data[1];
         $value['url_rebost'] = 'https://www.softcatala.org/wiki/'.str_replace( ' ', '_', $data[0] );
-        $value['post_content'] = $this->get_wiki_article_content( $value['url_rebost'] );
+        $wiki_page_content = file_get_contents( $value['url_rebost'] );
+        $value['post_content'] = $this->get_wiki_article_content( $wiki_page_content );
         $value['imatge_destacada_1'] = $this->get_image_url( $data[2] );
         $value['logotip_programa'] = $this->get_image_url( $data[7] );
         $value['llicencia'] = $this->get_taxonomy_id( $data[6], 'llicencia' );
@@ -103,37 +104,74 @@ class SC_Importer
             $value['arxivat'] = '0';
         }
 
+        $downloads_section = $this->get_downloads( $wiki_page_content );
 
-        $downloads = explode( ',', $data[4] );
-        $data[3] = false; //Calculation is not accurate
-        if ( $data[3] ) {
-            $download_size = str_replace( ',', '', $data[3]);
-            $sizes = str_split($download_size, strlen( $download_size ) / count( $downloads ) );
-        }
-
-        $os = explode( ',', $data[10] );
-        foreach ( $downloads as $key => $download ) {
-            $value['program'][$key]['url_baixada'] = $download;
-            if ( isset ( $os[$key] ) ) {
-                $os_name = $this->generate_os_name($os[$key]);
-                $value['program'][$key]['download_os'] = $this->get_taxonomy_id( $os_name, 'sistema-operatiu-programa' );
-                $value['program'][$key]['arquitectura_baixada'] = ( strpos($os[$key], '64') ? 2 : 1 );
+        if(strpos('http://%7B%7B%7BURL%20programa%7D%7D%7D', $data[4]) !== false) {
+            $first_step = explode( '<div id="quadrebaixades">', $wiki_page_content );
+            $second_step = explode( '<div class="social-rebost">' , $first_step[1] );
+            $regexp = "<a\s[^>]*href=(\"??)([^\" >]*?)\\1[^>]*>(.*)<\/a>";
+            if(preg_match_all("/$regexp/siU", $second_step[0], $matches)) {
+                $baixades = array_unique ($matches[2] );
+                $download = array();
+                foreach ($baixades as $key => $baixada) {
+                    $baixada = urldecode($baixada);
+                    parse_str(str_replace('https://baixades.softcatala.org?', '', str_replace('&amp;', '&', $baixada)));
+                    $value['program'][$key]['url_baixada'] = $url;
+                    $os_name = $this->generate_os_name($so);
+                    $value['program'][$key]['versio_baixada'] = $versio;
+                    $value['program'][$key]['download_os'] = $this->get_taxonomy_id( $os_name, 'sistema-operatiu-programa' );
+                    $value['program'][$key]['arquitectura_baixada'] = ( strpos($so, '64') ? 2 : 1 );
+                }
             }
-
-            $value['program'][$key]['versio_baixada'] = $data[19];
-            $value['program'][$key]['versio_estesa_baixada'] = $data[11];
-
+        } else {
+            $downloads = explode( ',', $data[4] );
+            $data[3] = false; //Calculation is not accurate
             if ( $data[3] ) {
-                $value['program'][$key]['download_size'] = $sizes[$key];
+                $download_size = str_replace( ',', '', $data[3]);
+                $sizes = str_split($download_size, strlen( $download_size ) / count( $downloads ) );
+            }
+
+            $os = explode( ',', $data[10] );
+            foreach ( $downloads as $key => $download ) {
+                $value['program'][$key]['url_baixada'] = $download;
+                if ( isset ( $os[$key] ) ) {
+                    $os_name = $this->generate_os_name($os[$key]);
+                    $value['program'][$key]['download_os'] = $this->get_taxonomy_id( $os_name, 'sistema-operatiu-programa' );
+                    $value['program'][$key]['arquitectura_baixada'] = ( strpos($os[$key], '64') ? 2 : 1 );
+                }
+
+                $value['program'][$key]['versio_baixada'] = $data[19];
+                $value['program'][$key]['versio_estesa_baixada'] = $data[11];
+
+                if ( $data[3] ) {
+                    $value['program'][$key]['download_size'] = $sizes[$key];
+                }
             }
         }
-
         return $value;
     }
 
-    private function get_wiki_article_content( $url )
+    private function get_downloads ( $wikipage )
     {
-        $wikipage = file_get_contents( $url );
+        $first_step = explode( '<div id="quadrebaixades">', $wikipage );
+        $second_step = explode( '<div class="social-rebost">' , $first_step[1] );
+        $regexp = "<a\s[^>]*href=(\"??)([^\" >]*?)\\1[^>]*>(.*)<\/a>";
+        if(preg_match_all("/$regexp/siU", $second_step[0], $matches)) {
+            $baixades = array_unique ($matches[2] );
+            $download = array();
+            foreach ($baixades as $key => $baixada) {
+                $baixada = urldecode($baixada);
+                parse_str(str_replace('https://baixades.softcatala.org?', '', str_replace('&amp;', '&', $baixada)));
+                $download['program'][$key]['url_baixada'] = $url;
+                $os_name = $this->generate_os_name($so);
+                $download['program'][$key]['download_os'] = $this->get_taxonomy_id( $os_name, 'sistema-operatiu-programa' );
+                $download['program'][$key]['arquitectura_baixada'] = ( strpos($so, '64') ? 2 : 1 );
+            }
+        }
+    }
+
+    private function get_wiki_article_content( $wikipage )
+    {
         $first_step = explode( '<h2><span class="mw-headline" id="Descripci.C3.B3">Descripció</span></h2>' , $wikipage );
         $second_step = explode("<div id=\"contact_warning\">" , $first_step[1] );
 
