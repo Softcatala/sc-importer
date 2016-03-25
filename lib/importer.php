@@ -366,7 +366,7 @@ class SC_Importer
         return $result;
     }
 
-    private function sc_add_draft_content ( $type, $nom, $descripcio, $slug, $allTerms, $metadata ) {
+    private function sc_add_draft_content ( $type, $nom, $descripcio, $slug, $allTerms, $metadata, $post_excerpt = null ) {
 
         $return = array();
         if( isset( $metadata['post_id'] ) ){
@@ -387,6 +387,7 @@ class SC_Importer
             'post_name'		    =>	$slug,
             'post_title'		=>	$nom,
             'post_content'      =>  $descripcio,
+            'post_excerpt'      =>  $post_excerpt,
             'post_date'         => date('Y-m-d H:i:s')
         );
 
@@ -563,11 +564,14 @@ class SC_Importer
         if ( ( $handle = fopen( $file, "r" ) ) !== FALSE ) {
             while (($data = fgetcsv($handle, 100000, ",")) !== FALSE) {
                 if ( $row > 1) {
-                    $project_info = $this->import_project_data( $data );
+                    $post_name = ( $data[6] != '' ? $data[6] : str_replace( 'Projectes/', '', $data[0] ));
+                    $slug = sanitize_title($post_name);
 
-                    if ( ! $page = get_page_by_path( $project_info['slug'] , OBJECT, 'projecte' ) ) {
+                    if ( ! $page = get_page_by_path( $slug , OBJECT, 'projecte' ) ) {
+                        $project_info = $this->import_project_data( $data );
                         $return['text'] .= $this->import_projecte($project_info) . '<br/>';
-                    } elseif ( strpos( get_permalink( $page ), 'projecte/' ) == false ) {
+                    } elseif ( strpos( get_permalink( $page ), 'projectes/' ) === false ) {
+                        $project_info = $this->import_project_data( $data );
                         $return['text'] .= $this->import_projecte($project_info) . '<br/>';
                     } else {
                         $return['text'] .= $project_info['post_name']. ' already exists<br/>';
@@ -655,7 +659,8 @@ class SC_Importer
             'responsable' => $project_info['responsable'],
             'url_rebost_pr' => $project_info['url_rebost_pr'],
             'llista_de_correu' => $project_info['llista_de_correu'],
-            'arxivat_pr' => $project_info['arxivat_pr']
+            'arxivat_pr' => $project_info['arxivat_pr'],
+            'post_excerpt' => $project_info['post_excerpt']
         );
 
         $terms = array(
@@ -663,7 +668,7 @@ class SC_Importer
         );
 
         //Create the project post entry
-        $return = $this->sc_add_draft_content ( 'projecte', $project_info['post_name'], $project_info['post_content'], $project_info['slug'], $terms, $metadata );
+        $return = $this->sc_add_draft_content ( 'projecte', $project_info['post_name'], $project_info['post_content'], $project_info['slug'], $terms, $metadata, $project_info['post_excerpt'] );
 
         if( $return['status'] == 1 ) {
             //Logo and screenshot file upload
@@ -690,6 +695,7 @@ class SC_Importer
         $value['responsable'] = str_replace( 'Usuari:', '', $data[2] );
         $value['slug'] = sanitize_title($value['post_name']);
         $value['url_rebost_pr'] = 'https://www.softcatala.org/wiki/'.str_replace( ' ', '_', $data[0] );
+        $value['post_excerpt'] = $data[3];
         $value['post_content'] = $this->get_wiki_project_content( $value['url_rebost_pr'] );
         $value['logotip'] = $this->get_image_url( $data[4] );
         $value['llista_de_correu'] = $data[5];
